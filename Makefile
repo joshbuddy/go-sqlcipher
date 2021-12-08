@@ -4,7 +4,7 @@ all:
 	env GO111MODULE=on go build -v ./...
 
 test:
-	go test -v sqlite3_test.go
+	go test -v ./...
 
 update-modules:
 	env GO111MODULE=on go get -u
