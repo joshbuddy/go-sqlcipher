@@ -4,6 +4,7 @@
 // Use of this source code is governed by an MIT-style
 // license that can be found in the LICENSE file.
 
+//go:build cgo
 // +build cgo
 
 package sqlite3
@@ -15,8 +16,10 @@ package sqlite3
 #cgo CFLAGS: -DHAVE_USLEEP=1
 #cgo CFLAGS: -DSQLITE_ENABLE_FTS3
 #cgo CFLAGS: -DSQLITE_ENABLE_FTS3_PARENTHESIS
+#cgo CFLAGS: -DSQLITE_ENABLE_FTS4_UNICODE61
 #cgo CFLAGS: -DSQLITE_TRACE_SIZE_LIMIT=15
 #cgo CFLAGS: -DSQLITE_OMIT_DEPRECATED
+#cgo CFLAGS: -DSQLITE_DISABLE_INTRINSIC
 #cgo CFLAGS: -DSQLITE_DEFAULT_WAL_SYNCHRONOUS=1
 #cgo CFLAGS: -DSQLITE_ENABLE_UPDATE_DELETE_LIMIT
 #cgo CFLAGS: -Wno-deprecated-declarations
@@ -1042,6 +1045,10 @@ func (d *SQLiteDriver) Open(dsn string) (driver.Conn, error) {
 	vfsName := ""
 	var cacheSize *int64
 
+	// SQLCipher PRAGMA's
+	pragmaKey := ""
+	pragmaCipherPageSize := -1
+
 	pos := strings.IndexRune(dsn, '?')
 	if pos >= 1 {
 		params, err := url.ParseQuery(dsn[pos+1:])
@@ -1380,6 +1387,20 @@ func (d *SQLiteDriver) Open(dsn string) (driver.Conn, error) {
 			vfsName = val
 		}
 
+		// _pragma_key
+		if val := params.Get("_pragma_key"); val != "" {
+			pragmaKey = val
+		}
+
+		// _pragma_cipher_page_size
+		if val := params.Get("_pragma_cipher_page_size"); val != "" {
+			pageSize, err := strconv.Atoi(val)
+			if err != nil {
+				return nil, fmt.Errorf("sqlite3: _pragma_cipher_page_size cannot be parsed: %s", err)
+			}
+			pragmaCipherPageSize = pageSize
+		}
+
 		if !strings.HasPrefix(dsn, "file:") {
 			dsn = dsn[:pos]
 		}
@@ -1423,6 +1444,25 @@ func (d *SQLiteDriver) Open(dsn string) (driver.Conn, error) {
 			return lastError(db)
 		}
 		return nil
+	}
+
+	// _pragma_key
+	if pragmaKey != "" {
+		query := fmt.Sprintf("PRAGMA key = \"%s\";", pragmaKey)
+		if err := exec(query); err != nil {
+			C.sqlite3_close_v2(db)
+			return nil, err
+		}
+	}
+
+	// _pragma_cipher_page_size
+	if pragmaCipherPageSize != -1 {
+		query := fmt.Sprintf("PRAGMA cipher_page_size = %d;",
+			pragmaCipherPageSize)
+		if err := exec(query); err != nil {
+			C.sqlite3_close_v2(db)
+			return nil, err
+		}
 	}
 
 	// USER AUTHENTICATION
