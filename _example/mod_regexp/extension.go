@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/mattn/go-sqlite3"
 	"log"
+	sqlite3 "github.com/egagnon77/go-sqlcipher/v4"
 )
 
 func main() {
