@@ -7,7 +7,7 @@ import (
 	"math"
 	"math/rand"
 
-	sqlite "github.com/egagnon77/go-sqlcipher/v4"
+	sqlite "github.com/joshbuddy/go-sqlcipher/v4"
 )
 
 // Computes x^y
