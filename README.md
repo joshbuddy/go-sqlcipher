@@ -13,15 +13,9 @@ conforming to the built-in database/sql interface. It is based on:
 
 SQLite itself is part of SQLCipher.
 
-### Incompatibilities of SQLCipher
+### Version
 
-The version tags of go-sqlcipher are the same as for SQLCipher.
-
-### Based on versions
-
-* v1.14.16 go-sqlite3
-* v4.5.3 sqlcipher
-* 2a1b284677a51f587ab7cd9d97395e0c0c93a447 libtomcrypt
+The version tags of go-sqlcipher employ semver. As this library is based on `mattn/go-sqlite3` and `sqlcipher/sqlcipher`, if either one receives a minor or major version update, the version number of this will also receieve a minor or major update. The [CHANGELOG.md](CHANGELOG.md) details the changes in each version.
 
 **SQLCipher 4.x is incompatible with SQLCipher 3.x!**
 
@@ -30,10 +24,6 @@ So if you upgrade a major version of go-sqlcipher, you yourself are responsible
 to upgrade existing database files.
 
 See [migrating databases](https://www.zetetic.net/sqlcipher/sqlcipher-api/#Migrating_Databases) for details.
-
-To upgrade your Go code to the 4.x series, change the import path to
-
-    "github.com/joshbuddy/go-sqlcipher/v4"
 
 ### Installation
 

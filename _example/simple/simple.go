@@ -6,7 +6,7 @@ import (
 	"log"
 	"os"
 
-	_ "github.com/joshbuddy/go-sqlcipher/v4"
+	_ "github.com/joshbuddy/go-sqlcipher"
 	_ "github.com/mattn/go-sqlite3"
 )
 
